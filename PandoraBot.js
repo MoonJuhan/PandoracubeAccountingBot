@@ -170,7 +170,16 @@ apiRouter.post('/inputPurpose', function(req, res) {
             text: "금액을 입력해 주십시오."
           }
         }
-      ]
+      ],
+      quickReplies: [
+      {
+        action: "block",
+        label: "5000원",
+        messageText: "5000원",
+        extra: {
+        }
+      }
+    ]
     }
   };
   _writePurpose(req.body.userRequest.user.id, req.body.userRequest.utterance);
@@ -317,7 +326,7 @@ function _JYFwriteMenu(userID, menu, time) {
         obj.table[item].type = "JYF";
         obj.table[item].jyf_menu = menu;
         obj.table[item].time = time;
-        
+
         returnText = obj.table[item].name + " " + obj.table[item].jyf_menu + "\n전송 하려면 전송코드를 입력하시오.";
         var json = JSON.stringify(obj);
         fs.writeFile('PandoraBotJSON.json', json);
