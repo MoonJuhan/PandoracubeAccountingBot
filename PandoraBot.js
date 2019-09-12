@@ -279,9 +279,41 @@ function _JYFwriteMenu(_userID, menu, time) {
 
   returnText = obj.table[userNum].name + " " + obj.table[userNum].jyf_menu + "\n전송 하려면 전송코드를 입력하시오.";
   writeJSON();
-
   return returnText;
 }
+
+// 시트에서 데이터 읽어오는중
+apiRouter.post('/JYF_readBill', function(req, res) {
+  const responseBody = {
+    version: "2.0",
+    template: {
+      outputs: [
+        {
+          simpleText: {
+            text: "데이터를 읽어오고 있습니다.\n최대 3초가 소요됩니다."
+          }
+        }
+      ],
+      quickReplies: [
+      {
+        action: "block",
+        label: "장부 출력",
+        blockId: "5d79f3ee92690d0001815e45",
+        extra: {
+        }
+      }
+    ]
+    }
+
+  };
+
+  var userNum = _checkJSON(req.body.userRequest.user.id);
+  exportJson(userNum);
+  console.log("JYF_readBill" + obj.table[userNum].name + req.body.userRequest.utterance);
+
+  console.log(responseBody);
+  res.status(200).send(responseBody);
+});
 
 // 본인 장부 확인
 apiRouter.post('/JYF_checkBill', function(req, res) {
@@ -299,7 +331,6 @@ apiRouter.post('/JYF_checkBill', function(req, res) {
       {
         action: "block",
         label: "처음으로",
-        messageText: "처음으로",
         blockId: "5ceb722905aaa7533585ab8b",
         extra: {
         }
@@ -319,22 +350,21 @@ function _JYFloadBill(_userID) {
   var returnText;
   var userNum = _checkJSON(_userID);
   exportJson(userNum);
+
   if(userNum == "empty"){
     return "오류가 발생했습니다. 처음부터 다시 해주십시오.";
   }
-  // !!!!!!!!!!!!!!!!!!!수정해야댐
+
   returnText = "-- " + obj.table[userNum].name + "님의 장부 --\n참깨라면 " + obj.table[userNum].jyf_num1 + "개\n박카스 " + obj.table[userNum].jyf_num2 + "개\n총액 " + obj.table[userNum].jyf_total + "";
-  // !!!!!!!!!!!!!!!!!!!!!!!!!
   return returnText;
 }
 
 // 시트JSON에서 데이터 추출해서 JSON에 쓰기
 function exportJson(_userNum) {
   var sheetDataLink_JYF = "https://spreadsheets.google.com/feeds/cells/1llk5IZ41U5Ul3kOQva8jkZwZlreHBmtzTwhgTwpeXGo/2/public/basic?alt=json-in-script&min-col=6&max-col=9&min-row=5";
-  var sheetJson;
 
   axios.get(sheetDataLink_JYF).then(function(response) {
-    sheetJson = response.data.slice(28,response.data.length-2);
+    var sheetJson = response.data.slice(28,response.data.length-2);
     entry = JSON.parse(sheetJson).feed.entry;
 
     for(var i in entry){
@@ -346,6 +376,7 @@ function exportJson(_userNum) {
         obj.table[_userNum].jyf_num2 = entry[num].content.$t;
         num++;
         obj.table[_userNum].jyf_total = entry[num].content.$t;
+        console.dir(obj.table[_userNum]);
         writeJSON();
         return 0;
       }
@@ -380,6 +411,7 @@ apiRouter.post('/sendData', function(req, res) {
     }
   };
   var sendObj = obj.table[_checkJSON(req.body.userRequest.user.id)];
+
 
   callAppsScript(_auth, sendObj);
   console.log("sendData " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + req.body.userRequest.utterance);
