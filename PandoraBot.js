@@ -5,7 +5,7 @@ const logger = require('morgan');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 require('dotenv').config({path:'PandoraBot.env'});
-const port = process.env.MAINPORT;
+const port = 8888;
 
 const apiRouter = express.Router();
 
@@ -112,7 +112,9 @@ function _nameCheck(_userID, userName) {
       // 이름 수정
       obj.table.splice(userNum, 1);
       var json = JSON.stringify(obj);
-      fs.writeFile('PandoraBotJSON.json', json);
+      fs.writeFile('PandoraBotJSON.json', json, function(err, result) {
+         if(err) console.log('error', err);
+       });
       return "처음 접속 하였습니다. 이름을 정확히 입력해주세요.";
     }
     return obj.table[userNum].name + "님 안녕하세요.";
@@ -392,8 +394,9 @@ function exportJson(_userNum) {
 // JSON 저장
 function writeJSON(){
   var json = JSON.stringify(obj);
-  fs.writeFile('PandoraBotJSON.json', json);
-
+  fs.writeFile('PandoraBotJSON.json', json, function(err, result) {
+     if(err) console.log('error', err);
+   });
 }
 
 // 데이터 전송
@@ -415,6 +418,7 @@ apiRouter.post('/sendData', function(req, res) {
 
   callAppsScript(_auth, sendObj);
   console.log("sendData " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + req.body.userRequest.utterance);
+
   res.status(200).send(responseBody);
 });
 
