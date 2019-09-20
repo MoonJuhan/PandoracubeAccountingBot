@@ -36,9 +36,9 @@ function writeData(time, name, purpose, money){
 function splitTime(time){
   var returnText;
   var ymd = time.split('T');
-  var splitTime = ymd[0].split('-');
+  var splitedTime = ymd[0].split('-');
 
-  returnText = splitTime[0] + ". " + splitTime[1] + ". " + splitTime[2];
+  returnText = splitedTime[0] + ". " + splitedTime[1] + ". " + splitedTime[2];
 
   return returnText;
 }
