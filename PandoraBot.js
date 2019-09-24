@@ -245,6 +245,106 @@ function _checkJSON(_userID){
   }
   return "empty";
 }
+// 시트에서 데이터 읽어오는중
+apiRouter.post('/readFee', function(req, res) {
+  const responseBody = {
+    version: "2.0",
+    template: {
+      outputs: [
+        {
+          simpleText: {
+            text: "데이터를 읽어오고 있습니다.\n최대 3초가 소요됩니다."
+          }
+        }
+      ],
+      quickReplies: [
+      {
+        action: "block",
+        label: "회비 확인 출력",
+        blockId: "5d882afdffa7480001515981",
+        extra: {
+        }
+      }
+    ]
+    }
+  };
+
+  var userNum = _checkJSON(req.body.userRequest.user.id);
+  pa_exportJson(userNum);
+  console.log("readFee" + obj.table[userNum].name + req.body.userRequest.utterance);
+  res.status(200).send(responseBody);
+});
+
+// 회비 제출 확인
+apiRouter.post('/checkFee', function(req, res) {
+  const responseBody = {
+    version: "2.0",template: {
+      outputs: [
+        {
+          simpleText: {
+            text: pa_loadFee(req.body.userRequest.user.id)
+          }
+        }
+      ],
+      quickReplies: [
+      {
+        action: "block",
+        label: "처음으로",
+        messageText: "처음으로",
+        blockId: "5ceb722905aaa7533585ab8b",
+        extra: {
+        }
+      }
+    ]
+    }
+  };
+  console.log("checkFee " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + req.body.userRequest.utterance);
+  res.status(200).send(responseBody);
+});
+
+// JSON에서 회비 확인 읽기
+function pa_exportJson(_userNum) {
+  var sheetDataLink_PA = "https://spreadsheets.google.com/feeds/cells/1llk5IZ41U5Ul3kOQva8jkZwZlreHBmtzTwhgTwpeXGo/2/public/basic?alt=json-in-script&min-col=11&max-col=13&min-row=4";
+
+  axios.get(sheetDataLink_PA).then(function(response) {
+    var sheetJson = response.data.slice(28,response.data.length-2);
+    entry = JSON.parse(sheetJson).feed.entry;
+
+    for(var i in entry){
+      if(entry[i].content.$t == obj.table[_userNum].name){
+        var num = i;
+        num++;
+        obj.table[_userNum].pa_receiveMonth = entry[num].content.$t;
+        num++;
+        obj.table[_userNum].pa_fee = entry[num].content.$t;
+        writeJSON();
+        return 0;
+      }
+    }
+    obj.table[_userNum].pa_receiveMonth = 0;
+    obj.table[_userNum].pa_fee = 1;
+  })
+  .catch(function(error) {
+    console.log(error);
+  });
+}
+
+// JSON에서 회비 확인 데이터 읽기
+function pa_loadFee(_userID) {
+  var returnText;
+  var userNum = _checkJSON(_userID);
+
+  if(userNum == "empty"){
+    return "오류가 발생했습니다. 처음부터 다시 해주십시오.";
+  }
+
+  var price = 5000;
+  if(obj.table[userNum].pa_fee == 2){
+    price = 3000;
+  }
+  returnText = obj.table[userNum].name + "님의 회비 확인\n마지막 제출월 : " + obj.table[userNum].pa_receiveMonth +"월\n금액 : " + price;
+  return returnText;
+}
 
 // ------- 진영 식품 --------
 // 메뉴 입력
@@ -255,7 +355,7 @@ apiRouter.post('/JYF_inputMenu', function(req, res) {
       outputs: [
         {
           simpleText: {
-            text: _JYFwriteMenu(req.body.userRequest.user.id, req.body.userRequest.utterance, req._startTime)
+            text: jyf_writeMenu(req.body.userRequest.user.id, req.body.userRequest.utterance, req._startTime)
           }
         }
       ]
@@ -267,7 +367,7 @@ apiRouter.post('/JYF_inputMenu', function(req, res) {
 });
 
 // JSON내 진영식품 메뉴 쓰기
-function _JYFwriteMenu(_userID, menu, time) {
+function jyf_writeMenu(_userID, menu, time) {
   var returnText;
   var userNum = _checkJSON(_userID);
 
@@ -310,7 +410,7 @@ apiRouter.post('/JYF_readBill', function(req, res) {
   };
 
   var userNum = _checkJSON(req.body.userRequest.user.id);
-  exportJson(userNum);
+  jyf_exportJson(userNum);
   console.log("JYF_readBill" + obj.table[userNum].name + req.body.userRequest.utterance);
 
   console.log(responseBody);
@@ -325,7 +425,7 @@ apiRouter.post('/JYF_checkBill', function(req, res) {
       outputs: [
         {
           simpleText: {
-            text: _JYFloadBill(req.body.userRequest.user.id)
+            text: jyf_loadBill(req.body.userRequest.user.id)
           }
         }
       ],
@@ -348,10 +448,9 @@ apiRouter.post('/JYF_checkBill', function(req, res) {
 });
 
 // JSON에서 장부 읽기
-function _JYFloadBill(_userID) {
+function jyf_loadBill(_userID) {
   var returnText;
   var userNum = _checkJSON(_userID);
-  exportJson(userNum);
 
   if(userNum == "empty"){
     return "오류가 발생했습니다. 처음부터 다시 해주십시오.";
@@ -361,7 +460,7 @@ function _JYFloadBill(_userID) {
 }
 
 // 시트JSON에서 데이터 추출해서 JSON에 쓰기
-function exportJson(_userNum) {
+function jyf_exportJson(_userNum) {
   var sheetDataLink_JYF = "https://spreadsheets.google.com/feeds/cells/1llk5IZ41U5Ul3kOQva8jkZwZlreHBmtzTwhgTwpeXGo/1/public/basic?alt=json-in-script&min-col=2&max-col=6&min-row=5";
 
   axios.get(sheetDataLink_JYF).then(function(response) {
