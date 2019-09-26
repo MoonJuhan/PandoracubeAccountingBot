@@ -25,7 +25,7 @@ function myFunction() {
           break;
       }
       scanPos++;
-      if(sheet_AutoWrite.getRange(datePos).getValue() == ""){
+      if(date.substring(9) != sheet_AutoWrite.getRange(datePos).getValue().toString().substring(8, 10)){
         check = false;
       }
     }
@@ -43,7 +43,7 @@ function dayUpdate(){
   var time = new Date();
   var month = time.getMonth()+1;
   var day = time.getDate() - 1;
-  var returnText = month + "월 " + day + "일";
+  var returnText = time.getFullYear() + ". " +month + ". " + day;
 
   return returnText;
 }
