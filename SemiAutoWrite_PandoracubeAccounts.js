@@ -84,13 +84,17 @@ function updateDB(_name, _menu){
      nameNum++;
     }
   }
+
   var menuNum = 0;
   switch(_menu){
     case "참깨라면":
       menuNum = 7;
       break;
-    case "박카스":
+    case "오뚜기밥":
       menuNum = 8;
+      break;
+    case "박카스":
+      menuNum = 9;
       break;
   }
 
