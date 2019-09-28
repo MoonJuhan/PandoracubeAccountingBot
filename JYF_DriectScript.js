@@ -9,10 +9,10 @@ function myFunction() {
   var check = true;
   var menu1Num = 0;
   var menu2Num = 0;
+  var menu3Num = 0;
   var scanPos = sheet_Analysis.getRange("C34").getValue();
 
   if(scanPos != "#N/A"){
-
     while(check){
       var datePos = "B"+scanPos;
 
@@ -20,8 +20,11 @@ function myFunction() {
         case "참깨라면":
           menu1Num++;
           break;
-        case "박카스":
+        case "오뚜기밥":
           menu2Num++;
+          break;
+        case "박카스":
+          menu3Num++;
           break;
       }
       scanPos++;
@@ -33,8 +36,7 @@ function myFunction() {
     var writePos = sheet_Analysis.getRange("C35").getValue();
 
 
-    writeDateSell(writePos, menu1Num, menu2Num, date);
-
+    writeDateSell(writePos, menu1Num, menu2Num, menu3Num, date);
   }
 
 }
@@ -48,8 +50,8 @@ function dayUpdate(){
   return returnText;
 }
 
-function writeDateSell(_writePos, _num1, _num2, _date){
-  sheet_Analysis.getRange("H"+_writePos).setValue(_date);
+function writeDateSell(_writePos, _num1, _num2, _num3, _date){
+  sheet_Analysis.getRange("I"+_writePos).setValue(_date);
 
   var time = new Date();
   var day;
@@ -76,7 +78,8 @@ function writeDateSell(_writePos, _num1, _num2, _date){
       day = "금요일"
       break;
   }
-  sheet_Analysis.getRange("I"+_writePos).setValue(day);
-  sheet_Analysis.getRange("J"+_writePos).setValue(_num1);
-  sheet_Analysis.getRange("K"+_writePos).setValue(_num2);
+  sheet_Analysis.getRange("J"+_writePos).setValue(day);
+  sheet_Analysis.getRange("K"+_writePos).setValue(_num1);
+  sheet_Analysis.getRange("L"+_writePos).setValue(_num2);
+  sheet_Analysis.getRange("M"+_writePos).setValue(_num3);
 }

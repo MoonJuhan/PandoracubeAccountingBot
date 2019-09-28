@@ -455,13 +455,13 @@ function jyf_loadBill(_userID) {
   if(userNum == "empty"){
     return "오류가 발생했습니다. 처음부터 다시 해주십시오.";
   }
-  returnText = "-- " + obj.table[userNum].name + "님의 장부 --\n등수 : " + obj.table[userNum].jyf_ranking +"\n참깨라면 " + obj.table[userNum].jyf_num1 + "개\n박카스 " + obj.table[userNum].jyf_num2 + "개\n총액 " + obj.table[userNum].jyf_total + "";
+  returnText = "-- " + obj.table[userNum].name + "님의 장부 --\n등수 : " + obj.table[userNum].jyf_ranking +"\n참깨라면 " + obj.table[userNum].jyf_num1 + "개\n오뚜기밥 " + obj.table[userNum].jyf_num2 + "개\n박카스 " + obj.table[userNum].jyf_num3 + "개\n총액 " + obj.table[userNum].jyf_total + "";
   return returnText;
 }
 
 // 시트JSON에서 데이터 추출해서 JSON에 쓰기
 function jyf_exportJson(_userNum) {
-  var sheetDataLink_JYF = "https://spreadsheets.google.com/feeds/cells/1llk5IZ41U5Ul3kOQva8jkZwZlreHBmtzTwhgTwpeXGo/1/public/basic?alt=json-in-script&min-col=2&max-col=6&min-row=5";
+  var sheetDataLink_JYF = "https://spreadsheets.google.com/feeds/cells/1llk5IZ41U5Ul3kOQva8jkZwZlreHBmtzTwhgTwpeXGo/1/public/basic?alt=json-in-script&min-col=2&max-col=7&min-row=5";
 
   axios.get(sheetDataLink_JYF).then(function(response) {
     var sheetJson = response.data.slice(28,response.data.length-2);
@@ -475,6 +475,8 @@ function jyf_exportJson(_userNum) {
         num++;
         obj.table[_userNum].jyf_num2 = entry[num].content.$t;
         num++;
+        obj.table[_userNum].jyf_num3 = entry[num].content.$t;
+        num++;
         obj.table[_userNum].jyf_total = entry[num].content.$t;
         num++;
         obj.table[_userNum].jyf_ranking = entry[num].content.$t;
@@ -484,6 +486,7 @@ function jyf_exportJson(_userNum) {
     }
     obj.table[_userNum].jyf_num1 = 0;
     obj.table[_userNum].jyf_num2 = 0;
+    obj.table[_userNum].jyf_num3 = 0;
     obj.table[_userNum].jyf_total = 0;
     obj.table[_userNum].jyf_ranking = "X";
 
