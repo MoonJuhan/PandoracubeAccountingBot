@@ -1,20 +1,25 @@
 var GSS = SpreadsheetApp.getActive();
 var sheet_AutoWrite = GSS.getSheetByName("자동입력시트");
 var sheet_Analysis = GSS.getSheetByName("분석시트");
+var sheet_Hide = GSS.getSheetByName("숨김시트");
 
 function myFunction() {
   var date = dayUpdate();
-  sheet_Analysis.getRange("C33").setValue(date);
+  sheet_Hide.getRange("J3").setValue(date);
 
   var check = true;
   var menu1Num = 0;
   var menu2Num = 0;
   var menu3Num = 0;
-  var scanPos = sheet_Analysis.getRange("C34").getValue();
+  var scanPos = sheet_Hide.getRange("J5").getValue();
 
   if(scanPos != "#N/A"){
     while(check){
       var datePos = "B"+scanPos;
+      if(sheet_Hide.getRange("J4").getValue().toString().substring(8, 10) != sheet_AutoWrite.getRange(datePos).getValue().toString().substring(8, 10)){
+        check = false;
+        break;
+      }
 
       switch(sheet_AutoWrite.getRange("D"+scanPos).getValue()){
         case "참깨라면":
@@ -28,15 +33,11 @@ function myFunction() {
           break;
       }
       scanPos++;
-      if(date.substring(9) != sheet_AutoWrite.getRange(datePos).getValue().toString().substring(8, 10)){
-        check = false;
-      }
     }
 
-    var writePos = sheet_Analysis.getRange("C35").getValue();
+    var writePos = sheet_Hide.getRange("J6").getValue();
 
-
-    writeDateSell(writePos, menu1Num, menu2Num, menu3Num, date);
+    writeDateSell(writePos, menu1Num, menu2Num, menu3Num, sheet_Hide.getRange("J4").getValue());
   }
 
 }
@@ -44,7 +45,7 @@ function myFunction() {
 function dayUpdate(){
   var time = new Date();
   var month = time.getMonth()+1;
-  var day = time.getDate() - 1;
+  var day = time.getDate();
   var returnText = time.getFullYear() + ". " +month + ". " + day;
 
   return returnText;
