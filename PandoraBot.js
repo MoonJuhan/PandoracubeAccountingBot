@@ -52,7 +52,7 @@ apiRouter.post('/nameInput', function(req, res) {
     ]
     }
   };
-  console.log("nameInput " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + req.body.userRequest.utterance);
+  console.log("nameInput " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " +req.body.userRequest.utterance + " " + req._startTime);
   res.status(200).send(responseBody);
 });
 
@@ -88,7 +88,7 @@ apiRouter.post('/nameCheck', function(req, res) {
     ]
     }
   };
-  console.log("nameCheck " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + req.body.userRequest.utterance);
+  console.log("nameCheck " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " +req.body.userRequest.utterance + " " + req._startTime);
   res.status(200).send(responseBody);
 });
 
@@ -134,7 +134,7 @@ apiRouter.post('/editName', function(req, res) {
         }
       ]}};
 
-  console.log("editName " + req.body.userRequest.utterance);
+  console.log("editName " +req.body.userRequest.utterance + " " + req._startTime);
   res.status(200).send(responseBody);
 });
 
@@ -162,7 +162,7 @@ apiRouter.post('/inputPurpose', function(req, res) {
     }
   };
   _writePurpose(req.body.userRequest.user.id, req.body.userRequest.utterance);
-  console.log("inputPurpose" + obj.table[_checkJSON(req.body.userRequest.user.id)].name + req.body.userRequest.utterance);
+  console.log("inputPurpose" + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " +req.body.userRequest.utterance + " " + req._startTime);
   res.status(200).send(responseBody);
 });
 
@@ -186,7 +186,7 @@ apiRouter.post('/inputMoney', function(req, res) {
     template: _writeMoney(req.body.userRequest.user.id, req.body.userRequest.utterance, req._startTime)
 
   };
-  console.log("inputMoney " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + req.body.userRequest.utterance);
+  console.log("inputMoney " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " +req.body.userRequest.utterance + " " + req._startTime);
   res.status(200).send(responseBody);
 });
 
@@ -271,7 +271,7 @@ apiRouter.post('/readFee', function(req, res) {
 
   var userNum = _checkJSON(req.body.userRequest.user.id);
   pa_exportJson(userNum);
-  console.log("readFee" + obj.table[userNum].name + req.body.userRequest.utterance);
+  console.log("readFee" + obj.table[userNum].name + " " +req.body.userRequest.utterance + " " + req._startTime);
   res.status(200).send(responseBody);
 });
 
@@ -298,13 +298,13 @@ apiRouter.post('/checkFee', function(req, res) {
     ]
     }
   };
-  console.log("checkFee " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + req.body.userRequest.utterance);
+  console.log("checkFee " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " +req.body.userRequest.utterance + " " + req._startTime);
   res.status(200).send(responseBody);
 });
 
 // JSON에서 회비 확인 읽기
 function pa_exportJson(_userNum) {
-  var sheetDataLink_PA = "https://spreadsheets.google.com/feeds/cells/1llk5IZ41U5Ul3kOQva8jkZwZlreHBmtzTwhgTwpeXGo/2/public/basic?alt=json-in-script&min-col=11&max-col=13&min-row=4";
+  var sheetDataLink_PA = "https://spreadsheets.google.com/feeds/cells/1llk5IZ41U5Ul3kOQva8jkZwZlreHBmtzTwhgTwpeXGo/4/public/basic?alt=json-in-script&min-col=11&max-col=13&min-row=4";
 
   axios.get(sheetDataLink_PA).then(function(response) {
     var sheetJson = response.data.slice(28,response.data.length-2);
@@ -362,7 +362,7 @@ apiRouter.post('/JYF_inputMenu', function(req, res) {
     }
   };
 
-  console.log("JYF_inputMenu" + obj.table[_checkJSON(req.body.userRequest.user.id)].name + req.body.userRequest.utterance);
+  console.log("JYF_inputMenu" + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " +req.body.userRequest.utterance + " " + req._startTime);
   res.status(200).send(responseBody);
 });
 
@@ -411,7 +411,7 @@ apiRouter.post('/JYF_readBill', function(req, res) {
 
   var userNum = _checkJSON(req.body.userRequest.user.id);
   jyf_exportJson(userNum);
-  console.log("JYF_readBill" + obj.table[userNum].name + req.body.userRequest.utterance);
+  console.log("JYF_readBill" + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " +req.body.userRequest.utterance + " " + req._startTime);
 
   console.log(responseBody);
   res.status(200).send(responseBody);
@@ -441,7 +441,7 @@ apiRouter.post('/JYF_checkBill', function(req, res) {
     }
   };
 
-  console.log("JYF_checkBill" + obj.table[_checkJSON(req.body.userRequest.user.id)].name + req.body.userRequest.utterance);
+  console.log("JYF_checkBill" + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " +req.body.userRequest.utterance + " " + req._startTime);
 
   console.log(responseBody);
   res.status(200).send(responseBody);
@@ -461,7 +461,7 @@ function jyf_loadBill(_userID) {
 
 // 시트JSON에서 데이터 추출해서 JSON에 쓰기
 function jyf_exportJson(_userNum) {
-  var sheetDataLink_JYF = "https://spreadsheets.google.com/feeds/cells/1llk5IZ41U5Ul3kOQva8jkZwZlreHBmtzTwhgTwpeXGo/1/public/basic?alt=json-in-script&min-col=2&max-col=7&min-row=5";
+  var sheetDataLink_JYF = "https://spreadsheets.google.com/feeds/cells/1llk5IZ41U5Ul3kOQva8jkZwZlreHBmtzTwhgTwpeXGo/4/public/basic?alt=json-in-script&min-col=2&max-col=9&min-row=4";
 
   axios.get(sheetDataLink_JYF).then(function(response) {
     var sheetJson = response.data.slice(28,response.data.length-2);
@@ -470,6 +470,8 @@ function jyf_exportJson(_userNum) {
     for(var i in entry){
       if(entry[i].content.$t == obj.table[_userNum].name){
         var num = i;
+        num++;
+        obj.table[_userNum].jyf_allSeasonTotal = entry[num].content.$t;
         num++;
         obj.table[_userNum].jyf_num1 = entry[num].content.$t;
         num++;
@@ -480,6 +482,8 @@ function jyf_exportJson(_userNum) {
         obj.table[_userNum].jyf_total = entry[num].content.$t;
         num++;
         obj.table[_userNum].jyf_ranking = entry[num].content.$t;
+        num++;
+        obj.table[_userNum].jyf_rank = entry[num].content.$t;
         writeJSON();
         return 0;
       }
@@ -524,7 +528,7 @@ apiRouter.post('/sendData', function(req, res) {
 
 
   callAppsScript(_auth, sendObj);
-  console.log("sendData " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + req.body.userRequest.utterance);
+  console.log("sendData " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " +req.body.userRequest.utterance + " " + req._startTime);
 
   res.status(200).send(responseBody);
 });
