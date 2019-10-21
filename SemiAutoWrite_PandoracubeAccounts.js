@@ -6,14 +6,16 @@ var sheet_JYF = SpreadsheetApp.openById(SheetID_JYF).getSheetByName('자동입�
 var returnObj = {"text": "hello"};
 
 function myFunction(jsonObj) {
-  var _time = splitTime(jsonObj.time);
+
+  // 시간 추출
+  var _time = splitTime();
 
   // 판도라큐브 회계와 진영 식품 분리
   if(jsonObj.type == "PA"){
     var _money = wonDelete(jsonObj.money);
     writeData(_time, jsonObj.name,jsonObj.purpose,_money);
     returnObj.text = jsonObj.name;
-    console.log(jsonObj);
+
   }else if(jsonObj.type == "JYF"){
     writeData_JYF(_time, jsonObj.name,jsonObj.jyf_menu);
   }
@@ -23,6 +25,7 @@ function myFunction(jsonObj) {
   return returnObj;
 }
 
+// 판도라큐브 회계 시트에 작성
 function writeData(time, name, purpose, money){
       var settingPositionRow = sheet_PA.getLastRow();
       sheet_PA.getRange(settingPositionRow + 1, 2).setValue(time);
@@ -33,24 +36,26 @@ function writeData(time, name, purpose, money){
       sheet_PA.getRange(settingPositionRow + 1, 7).setValue("통장");
 }
 
-function splitTime(time){
-  var returnText;
-  var ymd = time.split('T');
-  var splitedTime = ymd[0].split('-');
+// 입력될 시간 추출
+function splitTime(){
+  var time = new Date();
 
-  returnText = splitedTime[0] + ". " + splitedTime[1] + ". " + splitedTime[2];
+  var returnText;
+  var month = time.getMonth() + 1;
+  returnText = time.getFullYear() + ". " + month + ". " + time.getDate();
 
   return returnText;
 }
 
+// 입력된 금액에서 '원' 삭제
 function wonDelete(money){
   money = money.split('원');
 
   return money;
 }
 
-// JYF ----
-
+// ---- JYF ----
+// 진영식품 시트에 작성
 function writeData_JYF(time, name, menu){
   var settingPositionRow = sheet_JYF.getLastRow();
   var check = true;
@@ -62,7 +67,6 @@ function writeData_JYF(time, name, menu){
     check = false;
     }
   }
-
   sheet_JYF.getRange(settingPositionRow + 1, 2).setValue(time);
   sheet_JYF.getRange(settingPositionRow + 1, 3).setValue(name);
   sheet_JYF.getRange(settingPositionRow + 1, 4).setValue(menu);
@@ -70,6 +74,7 @@ function writeData_JYF(time, name, menu){
   updateDB(name, menu);
 }
 
+//
 function updateDB(_name, _menu){
   var check = true;
   var nameNum = 5;
