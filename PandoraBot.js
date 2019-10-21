@@ -183,7 +183,7 @@ function _writePurpose(_userID, purpose) {
 apiRouter.post('/inputMoney', function(req, res) {
   const responseBody = {
     version: "2.0",
-    template: _writeMoney(req.body.userRequest.user.id, req.body.userRequest.utterance, req._startTime)
+    template: _writeMoney(req.body.userRequest.user.id, req.body.userRequest.utterance)
 
   };
   console.log("inputMoney " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " +req.body.userRequest.utterance + " " + req._startTime);
@@ -191,7 +191,7 @@ apiRouter.post('/inputMoney', function(req, res) {
 });
 
 // JSON내 금액 쓰기
-function _writeMoney(_userID, money, time) {
+function _writeMoney(_userID, money) {
   var userNum = _checkJSON(_userID);
   var returnObj;
 
@@ -219,7 +219,6 @@ function _writeMoney(_userID, money, time) {
   }
   obj.table[userNum].type = "PA";
   obj.table[userNum].money = money;
-  obj.table[userNum].time = time;
   var returnText = obj.table[userNum].name + " " + obj.table[userNum].purpose + " " + obj.table[userNum].money + "\n전송 하려면 전송코드를 입력하시오.";
 
   writeJSON();
@@ -245,6 +244,7 @@ function _checkJSON(_userID){
   }
   return "empty";
 }
+
 // 시트에서 데이터 읽어오는중
 apiRouter.post('/readFee', function(req, res) {
   const responseBody = {
@@ -355,7 +355,7 @@ apiRouter.post('/JYF_inputMenu', function(req, res) {
       outputs: [
         {
           simpleText: {
-            text: jyf_writeMenu(req.body.userRequest.user.id, req.body.userRequest.utterance, req._startTime)
+            text: jyf_writeMenu(req.body.userRequest.user.id, req.body.userRequest.utterance)
           }
         }
       ]
@@ -367,7 +367,7 @@ apiRouter.post('/JYF_inputMenu', function(req, res) {
 });
 
 // JSON내 진영식품 메뉴 쓰기
-function jyf_writeMenu(_userID, menu, time) {
+function jyf_writeMenu(_userID, menu) {
   var returnText;
   var userNum = _checkJSON(_userID);
 
@@ -377,7 +377,6 @@ function jyf_writeMenu(_userID, menu, time) {
 
   obj.table[userNum].type = "JYF";
   obj.table[userNum].jyf_menu = menu;
-  obj.table[userNum].time = time;
 
   returnText = obj.table[userNum].name + " " + obj.table[userNum].jyf_menu + "\n전송 하려면 전송코드를 입력하시오.";
   writeJSON();
