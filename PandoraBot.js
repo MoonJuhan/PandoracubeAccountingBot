@@ -378,8 +378,10 @@ function jyf_writeMenu(_userID, menu) {
   obj.table[userNum].type = "JYF";
   obj.table[userNum].jyf_menu = menu;
 
-  returnText = obj.table[userNum].name + " " + obj.table[userNum].jyf_menu + "\n전송 하려면 전송코드를 입력하시오.";
+  returnText = obj.table[userNum].name + " " + obj.table[userNum].jyf_menu + "\n서버에 전송 되었습니다.";
+
   writeJSON();
+  callAppsScript(_auth, obj.table[userNum]);
   return returnText;
 }
 
