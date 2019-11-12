@@ -347,7 +347,7 @@ function pa_loadFee(_userID) {
 }
 
 // ------- 진영 식품 --------
-// 메뉴 입력
+// 메뉴 입력 - 바로 서버 전송
 apiRouter.post('/JYF_inputMenu', function(req, res) {
   const responseBody = {
     version: "2.0",
@@ -358,7 +358,16 @@ apiRouter.post('/JYF_inputMenu', function(req, res) {
             text: jyf_writeMenu(req.body.userRequest.user.id, req.body.userRequest.utterance)
           }
         }
-      ]
+      ],
+      quickReplies: [
+      {
+        action: "block",
+        label: "처음으로",
+        blockId: "5ceb722905aaa7533585ab8b",
+        extra: {
+        }
+      }
+    ]
     }
   };
 
