@@ -21,7 +21,24 @@ const {google} = require('googleapis');
 var _auth;
 
 var obj = {
-   table: []
+  table: [],
+  jyf_info: {
+    menu1 : {
+      name: "",
+      stock: "",
+      total: ""
+    },
+    menu2 : {
+      name: "",
+      stock: "",
+      total: ""
+    },
+    menu3 : {
+      name: "",
+      stock: "",
+      total: ""
+    }
+  }
 };
 
 fs.readFile("PandoraBotJSON.json", function(err, data) {
@@ -99,9 +116,34 @@ function _nameCheck(_userID, userName) {
   if(userNum == "empty"){
     // JSON에 이름 없음
     if(userName == "NULL"){
-      return "처음 접속 하였습니다. 이름을 정확히 입력해주세요.";
+      return "처음 접속 하였습니다. 이름을 정확히 입력해주세요. 입력에 이상이 있을경우 담당자에게 문의 바랍니다.";
     }else{
-      obj.table.push({id:_userID, name:userName});
+      obj.table.push({
+        id:_userID,
+        name:userName,
+        type: "",
+        time: "",
+        pa_input: {
+          purpose: "",
+          money: "",
+        },
+        pa_output: {
+          pa_receiveMonth: "0",
+          pa_fee: "1"
+        }.
+        jyf_input: {
+          jyf_menu:""
+        },
+        jyf_output: {
+          jyf_num1: "0",
+          jyf_num2: "0",
+          jyf_num3: "0",
+          jyf_total: "0",
+          jyf_ranking: "X",
+          jyf_allSeasonTotal: "",
+          jyf_rank: ""
+        }
+      });
       var json = JSON.stringify(obj);
       fs.writeFile('PandoraBotJSON.json', json);
       return "처음 접속 하였습니다." + userName + "님 안녕하세요.";
@@ -173,7 +215,7 @@ function _writePurpose(_userID, purpose) {
     return "오류가 발생했습니다. 처음부터 다시 해주십시오.";
   }
   obj.table[userNum].type = "PA";
-  obj.table[userNum].purpose = purpose;
+  obj.table[userNum].pa_input.purpose = purpose;
 
   writeJSON();
   return "금액을 정확히 입력해 주십시오.";
@@ -218,7 +260,7 @@ function _writeMoney(_userID, money) {
     return returnObj.outputs;
   }
   obj.table[userNum].type = "PA";
-  obj.table[userNum].money = money;
+  obj.table[userNum].pa_input.money = money;
   var returnText = obj.table[userNum].name + " " + obj.table[userNum].purpose + " " + obj.table[userNum].money + "\n전송 하려면 전송코드를 입력하시오.";
 
   writeJSON();
@@ -314,9 +356,9 @@ function pa_exportJson(_userNum) {
       if(entry[i].content.$t == obj.table[_userNum].name){
         var num = i;
         num++;
-        obj.table[_userNum].pa_receiveMonth = entry[num].content.$t;
+        obj.table[_userNum].pa_output.pa_receiveMonth = entry[num].content.$t;
         num++;
-        obj.table[_userNum].pa_fee = entry[num].content.$t;
+        obj.table[_userNum].pa_output.pa_fee = entry[num].content.$t;
         writeJSON();
         return 0;
       }
@@ -339,7 +381,7 @@ function pa_loadFee(_userID) {
   }
 
   var price = 5000;
-  if(obj.table[userNum].pa_fee == 2){
+  if(obj.table[userNum].pa_output.pa_fee == 2){
     price = 3000;
   }
   returnText = obj.table[userNum].name + "님의 회비 확인\n마지막 제출월 : " + obj.table[userNum].pa_receiveMonth +"월\n금액 : " + price;
@@ -347,7 +389,7 @@ function pa_loadFee(_userID) {
 }
 
 // ------- 진영 식품 --------
-// 메뉴 입력 - 바로 서버 전송
+// 메뉴 입력
 apiRouter.post('/JYF_inputMenu', function(req, res) {
   const responseBody = {
     version: "2.0",
@@ -362,10 +404,8 @@ apiRouter.post('/JYF_inputMenu', function(req, res) {
       quickReplies: [
       {
         action: "block",
-        label: "처음으로",
-        blockId: "5ceb722905aaa7533585ab8b",
-        extra: {
-        }
+        label: "전송하기",
+        blockId: "5ceb4488e82127459ccb377c"
       }
     ]
     }
@@ -385,14 +425,40 @@ function jyf_writeMenu(_userID, menu) {
   }
 
   obj.table[userNum].type = "JYF";
-  obj.table[userNum].jyf_menu = menu;
+  obj.table[userNum].jyf_input.jyf_menu = menu;
 
-  returnText = obj.table[userNum].name + " " + obj.table[userNum].jyf_menu + "\n서버에 전송 되었습니다.";
+  returnText = obj.table[userNum].name + " " + obj.table[userNum].jyf_menu + "\n서버에 전송 하려면 하단의 버튼을 누르세요.";
 
   writeJSON();
-  callAppsScript(_auth, obj.table[userNum]);
   return returnText;
 }
+
+// 메뉴 전송
+apiRouter.post('/JYF_sendData', function(req, res) {
+  const responseBody = {
+    version: "2.0",
+    template: {
+      outputs: [
+        {
+          simpleText: {
+            text: "전송 되었습니다."
+          }
+        }
+      ],
+      quickReplies: [
+      {
+        action: "block",
+        label: "처음으로",
+        blockId: "5ceb722905aaa7533585ab8b"
+      }
+    ]
+    }
+  };
+  callAppsScript(_auth, obj.table[_checkJSON(req.body.userRequest.user.id)]);
+  updateJsonDB();
+  console.log("JYF_sendData" + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " +req.body.userRequest.utterance + " " + req._startTime);
+  res.status(200).send(responseBody);
+});
 
 // 시트에서 데이터 읽어오는중
 apiRouter.post('/JYF_readBill', function(req, res) {
@@ -465,7 +531,7 @@ function jyf_loadBill(_userID) {
   if(userNum == "empty"){
     return "오류가 발생했습니다. 처음부터 다시 해주십시오.";
   }
-  returnText = "-- " + obj.table[userNum].name + "님의 장부 --\n등수 : " + obj.table[userNum].jyf_ranking +"\n참깨라면 " + obj.table[userNum].jyf_num1 + "개\n오뚜기밥 " + obj.table[userNum].jyf_num2 + "개\n박카스 " + obj.table[userNum].jyf_num3 + "개\n총액 " + obj.table[userNum].jyf_total + "";
+  returnText = "-- " + obj.table[userNum].name + "님의 장부 --\n등수 : " + obj.table[userNum].jyf_output.jyf_ranking +"\n참깨라면 " + obj.table[userNum].jyf_output.jyf_num1 + "개\n오뚜기밥 " + obj.table[userNum].jyf_output.jyf_num2 + "개\n박카스 " + obj.table[userNum].jyf_output.jyf_num3 + "개\n총액 " + obj.table[userNum].jyf_output.jyf_total + "";
   return returnText;
 }
 
@@ -481,34 +547,64 @@ function jyf_exportJson(_userNum) {
       if(entry[i].content.$t == obj.table[_userNum].name){
         var num = i;
         num++;
-        obj.table[_userNum].jyf_allSeasonTotal = entry[num].content.$t;
+        obj.table[_userNum].jyf_output.jyf_allSeasonTotal = entry[num].content.$t;
         num++;
-        obj.table[_userNum].jyf_num1 = entry[num].content.$t;
+        obj.table[_userNum].jyf_output.jyf_num1 = entry[num].content.$t;
         num++;
-        obj.table[_userNum].jyf_num2 = entry[num].content.$t;
+        obj.table[_userNum].jyf_output.jyf_num2 = entry[num].content.$t;
         num++;
-        obj.table[_userNum].jyf_num3 = entry[num].content.$t;
+        obj.table[_userNum].jyf_output.jyf_num3 = entry[num].content.$t;
         num++;
-        obj.table[_userNum].jyf_total = entry[num].content.$t;
+        obj.table[_userNum].jyf_output.jyf_total = entry[num].content.$t;
         num++;
-        obj.table[_userNum].jyf_ranking = entry[num].content.$t;
+        obj.table[_userNum].jyf_output.jyf_ranking = entry[num].content.$t;
         num++;
-        obj.table[_userNum].jyf_rank = entry[num].content.$t;
+        obj.table[_userNum].jyf_output.jyf_rank = entry[num].content.$t;
         writeJSON();
         return 0;
       }
     }
-    obj.table[_userNum].jyf_num1 = 0;
-    obj.table[_userNum].jyf_num2 = 0;
-    obj.table[_userNum].jyf_num3 = 0;
-    obj.table[_userNum].jyf_total = 0;
-    obj.table[_userNum].jyf_ranking = "X";
+    obj.table[_userNum].jyf_output.jyf_num1 = 0;
+    obj.table[_userNum].jyf_output.jyf_num2 = 0;
+    obj.table[_userNum].jyf_output.jyf_num3 = 0;
+    obj.table[_userNum].jyf_output.jyf_total = 0;
+    obj.table[_userNum].jyf_output.jyf_ranking = "X";
 
   })
   .catch(function(error) {
     console.log(error);
   });
 }
+
+// 재고 확인
+apiRouter.post('/JYF_checkStock', function(req, res) {
+  var returnText = "-- 진영 식품 재고 --\n" + obj.jyf_info.menu1.name + " : " + obj.jyf_info.menu1.stock + "\n" + obj.jyf_info.menu2.name + " : " + obj.jyf_info.menu2.stock + "\n" + obj.jyf_info.menu3.name + " : " + obj.jyf_info.menu3.stock;
+
+  const responseBody = {
+    version: "2.0",
+    template: {
+      outputs: [
+        {
+          simpleText: {
+            text: returnText
+          }
+        }
+      ],
+      quickReplies: [
+      {
+        action: "block",
+        label: "처음으로",
+        blockId: "5ceb722905aaa7533585ab8b"
+      }
+    ]
+    }
+  };
+
+  console.log("JYF_checkStock" + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " + req._startTime);
+
+  console.log(responseBody);
+  res.status(200).send(responseBody);
+});
 
 // ^------ 진영 식품 -------^
 
@@ -528,7 +624,7 @@ apiRouter.post('/sendData', function(req, res) {
       outputs: [
         {
           simpleText: {
-            text: "전송되었습니다."
+            text: "전송되었습니다." // 오픈 빌더에서 텍스트 출력
           }
         }
       ]
@@ -604,6 +700,7 @@ function getAccessToken(oAuth2Client, callback) {
   });
 }
 
+// Google Apps Script 불러오기
 function callAppsScript(auth, parameter) { // eslint-disable-line no-unused-vars
   const scriptId = "1VUGXgd5MxQqbBgM-ygeB9jYT2HwDJSxlheeOmfapO7jSKi2jICKcD_8x";
   const script = google.script('v1');
@@ -656,5 +753,92 @@ function callAppsScript(auth, parameter) { // eslint-disable-line no-unused-vars
       }
 
     }
+  });
+
+  // DB 업데이트
+  updateJsonDB();
+}
+
+// Node.js JSON DB 업데이트
+function updateJsonDB(){
+  var sheetDataLink_JYF = "https://spreadsheets.google.com/feeds/cells/1llk5IZ41U5Ul3kOQva8jkZwZlreHBmtzTwhgTwpeXGo/4/public/basic?alt=json-in-script&min-col=2&max-col=9&min-row=4";
+  var sheetDataLink_PA = "https://spreadsheets.google.com/feeds/cells/1llk5IZ41U5Ul3kOQva8jkZwZlreHBmtzTwhgTwpeXGo/4/public/basic?alt=json-in-script&min-col=11&max-col=13&min-row=4";
+
+  axios.get(sheetDataLink_JYF).then(function(response) {
+    var sheetJson = response.data.slice(28,response.data.length-2);
+    entry = JSON.parse(sheetJson).feed.entry;
+    for(var i in entry){
+      if(entry[i].content.$t.length >= 2 && entry[i].content.$t.length <= 4){
+        for(var x = 0; x < obj.table.length; x++){
+          if(entry[i].content.$t == obj.table[x].name){
+            var num = i;
+            num++;
+            obj.table[x].jyf_output.jyf_allSeasonTotal = entry[num].content.$t;
+            num++;
+            obj.table[x].jyf_output.jyf_num1 = entry[num].content.$t;
+            num++;
+            obj.table[x].jyf_output.jyf_num2 = entry[num].content.$t;
+            num++;
+            obj.table[x].jyf_output.jyf_num3 = entry[num].content.$t;
+            num++;
+            obj.table[x].jyf_output.jyf_total = entry[num].content.$t;
+            num++;
+            obj.table[x].jyf_output.jyf_ranking = entry[num].content.$t;
+            num++;
+            obj.table[x].jyf_output.jyf_rank = entry[num].content.$t;
+          }
+        }
+      }
+
+
+      if(entry[i].content.$t == "재고 내역"){
+        var num = i;
+        obj.jyf_info.menu1.name = entry[num].content.$t;
+        num += 4;
+        obj.jyf_info.menu1.stock = entry[num].content.$t;
+        num++;
+        obj.jyf_info.menu1.total = entry[num].content.$t;
+        num++;
+        obj.jyf_info.menu2.name = entry[num].content.$t;
+        num++;
+        obj.jyf_info.menu2.stock = entry[num].content.$t;
+        num++;
+        obj.jyf_info.menu2.total = entry[num].content.$t;
+        num++;
+        obj.jyf_info.menu3.name = entry[num].content.$t;
+        num++;
+        obj.jyf_info.menu3.stock = entry[num].content.$t;
+        num++;
+        obj.jyf_info.menu3.total = entry[num].content.$t;
+      }
+    }
+    writeJSON();
+  })
+  .catch(function(error) {
+    console.log(error);
+  });
+
+
+  axios.get(sheetDataLink_PA).then(function(response) {
+    var sheetJson = response.data.slice(28,response.data.length-2);
+    entry = JSON.parse(sheetJson).feed.entry;
+
+    for(var i in entry){
+      if(entry[i].content.$t.length >= 2 && entry[i].content.$t.length <= 4){
+        for(var x = 0; x < obj.table.length; x++){
+          if(entry[i].content.$t == obj.table[x].name){
+            var num = i;
+            num++;
+            obj.table[x].pa_output.pa_receiveMonth = entry[num].content.$t;
+            num++;
+            obj.table[x].pa_output.pa_fee = entry[num].content.$t;
+          }
+        }
+      }
+    }
+    writeJSON();
+  })
+  .catch(function(error) {
+    console.log(error);
   });
 }
