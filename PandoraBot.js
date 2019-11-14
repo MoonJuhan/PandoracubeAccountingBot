@@ -45,7 +45,7 @@ fs.readFile("PandoraBotJSON.json", function(err, data) {
     obj = JSON.parse(data);
 });
 
-// 최초 이름 체크
+// 최초 및 수정시 이름 체크
 apiRouter.post('/nameInput', function(req, res) {
   const responseBody = {
     version: "2.0",
@@ -113,8 +113,10 @@ apiRouter.post('/nameCheck', function(req, res) {
 function _nameCheck(_userID, userName) {
   var userNum = _checkJSON(_userID);
 
+  console.log("userNum = " + userNum);
   if(userNum == "empty"){
     // JSON에 이름 없음
+    console.log("userName = " + userName);
     if(userName == "NULL"){
       return "처음 접속 하였습니다. 이름을 정확히 입력해주세요. 입력에 이상이 있을경우 담당자에게 문의 바랍니다.";
     }else{
@@ -130,9 +132,9 @@ function _nameCheck(_userID, userName) {
         pa_output: {
           pa_receiveMonth: "0",
           pa_fee: "1"
-        }.
+        },
         jyf_input: {
-          jyf_menu:""
+          jyf_menu: ""
         },
         jyf_output: {
           jyf_num1: "0",
@@ -144,21 +146,22 @@ function _nameCheck(_userID, userName) {
           jyf_rank: ""
         }
       });
-      var json = JSON.stringify(obj);
-      fs.writeFile('PandoraBotJSON.json', json);
+      writeJSON();
       return "처음 접속 하였습니다." + userName + "님 안녕하세요.";
     }
   }else{
     // JSON에 이름 있음
     if(userName == "D"){
       // 이름 수정
-      obj.table.splice(userNum, 1);
-      var json = JSON.stringify(obj);
-      fs.writeFile('PandoraBotJSON.json', json, function(err, result) {
-         if(err) console.log('error', err);
-       });
-      return "처음 접속 하였습니다. 이름을 정확히 입력해주세요.";
+      obj.table[userNum].name == "";
+      writeJSON();
+      return "이름을 수정합니다. 이름을 정확히 입력해주세요.";
+    }else if(userName == "NULL"){
+    }else{
+      obj.table[userNum].name = userName;
+      writeJSON();
     }
+
     return obj.table[userNum].name + "님 안녕하세요.";
   }
 }
@@ -261,7 +264,7 @@ function _writeMoney(_userID, money) {
   }
   obj.table[userNum].type = "PA";
   obj.table[userNum].pa_input.money = money;
-  var returnText = obj.table[userNum].name + " " + obj.table[userNum].purpose + " " + obj.table[userNum].money + "\n전송 하려면 전송코드를 입력하시오.";
+  var returnText = obj.table[userNum].name + " " + obj.table[userNum].pa_input.purpose + " " + obj.table[userNum].pa_input.money + "\n전송 하려면 전송코드를 입력하시오.";
 
   writeJSON();
 
@@ -281,6 +284,7 @@ function _writeMoney(_userID, money) {
 function _checkJSON(_userID){
   for(var item in obj.table){
     if(obj.table[item].id == _userID){
+      console.log(obj.table[item].name);
       return item;
     }
   }
@@ -363,8 +367,8 @@ function pa_exportJson(_userNum) {
         return 0;
       }
     }
-    obj.table[_userNum].pa_receiveMonth = 0;
-    obj.table[_userNum].pa_fee = 1;
+    obj.table[_userNum].pa_output.pa_receiveMonth = 0;
+    obj.table[_userNum].pa_output.pa_fee = 1;
   })
   .catch(function(error) {
     console.log(error);
@@ -384,7 +388,7 @@ function pa_loadFee(_userID) {
   if(obj.table[userNum].pa_output.pa_fee == 2){
     price = 3000;
   }
-  returnText = obj.table[userNum].name + "님의 회비 확인\n마지막 제출월 : " + obj.table[userNum].pa_receiveMonth +"월\n금액 : " + price;
+  returnText = obj.table[userNum].name + "님의 회비 확인\n마지막 제출월 : " + obj.table[userNum].pa_output.pa_receiveMonth +"월\n금액 : " + price;
   return returnText;
 }
 
@@ -405,7 +409,7 @@ apiRouter.post('/JYF_inputMenu', function(req, res) {
       {
         action: "block",
         label: "전송하기",
-        blockId: "5ceb4488e82127459ccb377c"
+        blockId: "5d6f63ab92690d0001812746"
       }
     ]
     }
@@ -427,7 +431,7 @@ function jyf_writeMenu(_userID, menu) {
   obj.table[userNum].type = "JYF";
   obj.table[userNum].jyf_input.jyf_menu = menu;
 
-  returnText = obj.table[userNum].name + " " + obj.table[userNum].jyf_menu + "\n서버에 전송 하려면 하단의 버튼을 누르세요.";
+  returnText = obj.table[userNum].name + " " + obj.table[userNum].jyf_input.jyf_menu + "\n서버에 전송 하려면 하단의 버튼을 누르세요.";
 
   writeJSON();
   return returnText;
@@ -547,6 +551,8 @@ function jyf_exportJson(_userNum) {
       if(entry[i].content.$t == obj.table[_userNum].name){
         var num = i;
         num++;
+        console.log(obj.table[_userNum].jyf_output.jyf_allSeasonTotal);
+        console.log(entry[num].content.$t);
         obj.table[_userNum].jyf_output.jyf_allSeasonTotal = entry[num].content.$t;
         num++;
         obj.table[_userNum].jyf_output.jyf_num1 = entry[num].content.$t;
@@ -768,11 +774,13 @@ function updateJsonDB(){
     var sheetJson = response.data.slice(28,response.data.length-2);
     entry = JSON.parse(sheetJson).feed.entry;
     for(var i in entry){
+
       if(entry[i].content.$t.length >= 2 && entry[i].content.$t.length <= 4){
         for(var x = 0; x < obj.table.length; x++){
           if(entry[i].content.$t == obj.table[x].name){
             var num = i;
             num++;
+
             obj.table[x].jyf_output.jyf_allSeasonTotal = entry[num].content.$t;
             num++;
             obj.table[x].jyf_output.jyf_num1 = entry[num].content.$t;
@@ -792,24 +800,17 @@ function updateJsonDB(){
 
 
       if(entry[i].content.$t == "재고 내역"){
-        var num = i;
-        obj.jyf_info.menu1.name = entry[num].content.$t;
+        var num = parseInt(i);
         num += 4;
-        obj.jyf_info.menu1.stock = entry[num].content.$t;
-        num++;
-        obj.jyf_info.menu1.total = entry[num].content.$t;
-        num++;
-        obj.jyf_info.menu2.name = entry[num].content.$t;
-        num++;
-        obj.jyf_info.menu2.stock = entry[num].content.$t;
-        num++;
-        obj.jyf_info.menu2.total = entry[num].content.$t;
-        num++;
-        obj.jyf_info.menu3.name = entry[num].content.$t;
-        num++;
-        obj.jyf_info.menu3.stock = entry[num].content.$t;
-        num++;
-        obj.jyf_info.menu3.total = entry[num].content.$t;
+        obj.jyf_info.menu1.name = entry[num].content.$t;
+        obj.jyf_info.menu1.stock = entry[++num].content.$t;
+        obj.jyf_info.menu1.total = entry[++num].content.$t;
+        obj.jyf_info.menu2.name = entry[++num].content.$t;
+        obj.jyf_info.menu2.stock = entry[++num].content.$t;
+        obj.jyf_info.menu2.total = entry[++num].content.$t;
+        obj.jyf_info.menu3.name = entry[++num].content.$t;
+        obj.jyf_info.menu3.stock = entry[++num].content.$t;
+        obj.jyf_info.menu3.total = entry[++num].content.$t;
       }
     }
     writeJSON();
