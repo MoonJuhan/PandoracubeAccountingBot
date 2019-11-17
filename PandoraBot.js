@@ -367,8 +367,6 @@ function pa_exportJson(_userNum) {
         return 0;
       }
     }
-    obj.table[_userNum].pa_output.pa_receiveMonth = 0;
-    obj.table[_userNum].pa_output.pa_fee = 1;
   })
   .catch(function(error) {
     console.log(error);
@@ -388,7 +386,7 @@ function pa_loadFee(_userID) {
   if(obj.table[userNum].pa_output.pa_fee == 2){
     price = 3000;
   }
-  returnText = obj.table[userNum].name + "님의 회비 확인\n마지막 제출월 : " + obj.table[userNum].pa_output.pa_receiveMonth +"월\n금액 : " + price;
+  returnText = obj.table[userNum].name + "님의 회비 확인\n" + obj.table[userNum].pa_output.pa_receiveMonth +"월 까지 제출 했습니다.\n회비는 한달에 " + price + "원 입니다.";
   return returnText;
 }
 
@@ -570,12 +568,6 @@ function jyf_exportJson(_userNum) {
         return 0;
       }
     }
-    obj.table[_userNum].jyf_output.jyf_num1 = 0;
-    obj.table[_userNum].jyf_output.jyf_num2 = 0;
-    obj.table[_userNum].jyf_output.jyf_num3 = 0;
-    obj.table[_userNum].jyf_output.jyf_total = 0;
-    obj.table[_userNum].jyf_output.jyf_ranking = "X";
-
   })
   .catch(function(error) {
     console.log(error);
