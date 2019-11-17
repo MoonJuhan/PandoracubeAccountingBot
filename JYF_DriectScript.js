@@ -5,29 +5,22 @@ var sheet_Hide = GSS.getSheetByName("서버 전송 및 계산 시트");
 
 function myFunction() {
   var date = dayUpdate();
-  var menu1Num = 0;
-  var menu2Num = 0;
-  var menu3Num = 0;
+
+  var menu = menuConfirm();
+
   var pinCell = sheet_AutoWrite.createTextFinder(date).findAll();
 
   for(var x = 0; x < pinCell.length; x++){
-    switch(sheet_AutoWrite.getRange(pinCell[x].getRow(), pinCell[x].getColumn()+2).getValue()){
-        case "참깨라면":
-          menu1Num++;
-          break;
-        case "오뚜기밥":
-          menu2Num++;
-          break;
-        case "박카스":
-          menu3Num++;
-          break;
+    for(var i in menu){
+      if(menu[i].name == sheet_AutoWrite.getRange(pinCell[x].getRow(), pinCell[x].getColumn()+2).getValue()){
+        menu[i].num++;
       }
+    }
   }
-
 
   var writePosCell = sheet_Hide.createTextFinder("쓰기 위치").findAll();
   var writePos = sheet_Hide.getRange(writePosCell[0].getRow(), writePosCell[0].getColumn() + 1).getValue();
-  writeDateSell(writePos, menu1Num, menu2Num, menu3Num, date);
+  writeDateSell(writePos, menu, date);
 }
 
 function dayUpdate(){
@@ -40,7 +33,7 @@ function dayUpdate(){
   return returnText;
 }
 
-function writeDateSell(_writePos, _num1, _num2, _num3, _date){
+function writeDateSell(_writePos, _menu, _date){
   var writePosColumn = sheet_Analysis.createTextFinder("판매 분석").findAll()[0].getColumn();
   sheet_Analysis.getRange(_writePos, writePosColumn).setValue(_date);
 
@@ -70,7 +63,23 @@ function writeDateSell(_writePos, _num1, _num2, _num3, _date){
       break;
   }
   sheet_Analysis.getRange(_writePos, writePosColumn + 1).setValue(day);
-  sheet_Analysis.getRange(_writePos, writePosColumn + 2).setValue(_num1);
-  sheet_Analysis.getRange(_writePos, writePosColumn + 3).setValue(_num2);
-  sheet_Analysis.getRange(_writePos, writePosColumn + 4).setValue(_num3);
+  for(var i in _menu){
+    sheet_Analysis.getRange(_writePos, writePosColumn + 2 + parseInt(i)).setValue(_menu[i].num);
+  }
+}
+
+function menuConfirm(){
+  var menu = [];
+
+  var menuRead = sheet_Hide.createTextFinder("메뉴 종류").findAll();
+  var x = 1;
+
+  while(sheet_Hide.getRange(menuRead[0].getRow() + x, menuRead[0].getColumn() + 1).isBlank() == false){
+    var obj = {};
+    obj.name = sheet_Hide.getRange(menuRead[0].getRow() + x, menuRead[0].getColumn() + 1).getValue();
+    obj.num = 0;
+    menu.push(obj);
+    x++;
+  }
+  return menu;
 }
