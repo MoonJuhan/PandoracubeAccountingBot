@@ -10,17 +10,21 @@ function myFunction() {
 
   var pinCell = sheet_AutoWrite.createTextFinder(date).findAll();
 
-  for(var x = 0; x < pinCell.length; x++){
-    for(var i in menu){
-      if(menu[i].name == sheet_AutoWrite.getRange(pinCell[x].getRow(), pinCell[x].getColumn()+2).getValue()){
-        menu[i].num++;
+  if(pinCell.length != 0){
+
+    for(var x = 0; x < pinCell.length; x++){
+      for(var i in menu){
+        if(menu[i].name == sheet_AutoWrite.getRange(pinCell[x].getRow(), pinCell[x].getColumn()+2).getValue()){
+          menu[i].num++;
+        }
       }
     }
+
+    var writePosCell = sheet_Hide.createTextFinder("쓰기 위치").findAll();
+    var writePos = sheet_Hide.getRange(writePosCell[0].getRow(), writePosCell[0].getColumn() + 1).getValue();
+    writeDateSell(writePos, menu, date);
   }
 
-  var writePosCell = sheet_Hide.createTextFinder("쓰기 위치").findAll();
-  var writePos = sheet_Hide.getRange(writePosCell[0].getRow(), writePosCell[0].getColumn() + 1).getValue();
-  writeDateSell(writePos, menu, date);
 }
 
 function dayUpdate(){
@@ -41,26 +45,26 @@ function writeDateSell(_writePos, _menu, _date){
   var day;
   switch(time.getDay()){
     case 0:
-      day = "토요일"
-      break;
+    day = "토요일"
+    break;
     case 1:
-      day = "일요일"
-      break;
+    day = "일요일"
+    break;
     case 2:
-      day = "월요일"
-      break;
+    day = "월요일"
+    break;
     case 3:
-      day = "화요일"
-      break;
+    day = "화요일"
+    break;
     case 4:
-      day = "수요일"
-      break;
+    day = "수요일"
+    break;
     case 5:
-      day = "목요일"
-      break;
+    day = "목요일"
+    break;
     case 6:
-      day = "금요일"
-      break;
+    day = "금요일"
+    break;
   }
   sheet_Analysis.getRange(_writePos, writePosColumn + 1).setValue(day);
   for(var i in _menu){
