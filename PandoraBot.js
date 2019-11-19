@@ -317,6 +317,7 @@ apiRouter.post('/readFee', function(req, res) {
 
   var userNum = _checkJSON(req.body.userRequest.user.id);
   pa_exportJson(userNum);
+  updateJsonDB();
   console.log("readFee" + obj.table[userNum].name + " " +req.body.userRequest.utterance + " " + req._startTime);
   res.status(200).send(responseBody);
 });
@@ -489,6 +490,7 @@ apiRouter.post('/JYF_readBill', function(req, res) {
 
   var userNum = _checkJSON(req.body.userRequest.user.id);
   jyf_exportJson(userNum);
+  updateJsonDB();
   console.log("JYF_readBill" + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " +req.body.userRequest.utterance + " " + req._startTime);
 
   console.log(responseBody);
