@@ -166,33 +166,84 @@ apiRouter.post('/editName', function(req, res) {
   res.status(200).send(responseBody);
 });
 
-// 목적 입력
-apiRouter.post('/inputPurpose', function(req, res) {
+// 향상된 회비 입력 스킬
+apiRouter.post('/enhancedDepositCheck', function(req, res) {
   const responseBody = {
     version: "2.0",
     template: {
       outputs: [
         {
           simpleText: {
-            text: "금액을 입력해 주십시오."
+            text: parameterCheck(req)
           }
         }
       ],
       quickReplies: [
-      {
-        action: "block",
-        label: "5000원",
-        messageText: "5000원",
-        extra: {
+        {
+          action: "block",
+          label: "전송하기",
+          messageText: sendText(req),
+          blockId: "5cf4aa1892690d0001191295"
+        },
+        {
+          action: "block",
+          label: "수정하기",
+          messageText: "수정하기",
+          blockId: "5e0d61b38192ac000179131c"
+        },
+        {
+          action: "block",
+          label: "처음으로",
+          messageText: "처음으로",
+          blockId: "5ceb722905aaa7533585ab8b"
         }
-      }
-    ]
+      ]
     }
   };
-  _writePurpose(req.body.userRequest.user.id, req.body.userRequest.utterance);
-  console.log("inputPurpose" + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " +req.body.userRequest.utterance + " " + req._startTime);
   res.status(200).send(responseBody);
 });
+
+function parameterCheck(req){
+  var returnObj = checkParams(req);
+
+  if(returnObj.purpose != "" && returnObj.money != "" ){
+    var returnText = "입력된 값\n목적 : " + returnObj.purpose + "\n" + "금액 : " + returnObj.money + "원";
+
+    return returnText;
+  }else{
+    return "오류가 발생하였습니다. 처음으로 돌아가십시오.";
+  }
+}
+
+function sendText(req){
+  var returnObj = checkParams(req);
+
+  if(returnObj.purpose != "" && returnObj.money != "" ){
+    var returnText = "목적 : " + returnObj.purpose + "\n" + "금액 : " + returnObj.money + "원\n전송하겠습니다.";
+
+    return returnText;
+  }else{
+    return "오류가 발생하였습니다. 처음으로 돌아가십시오.";
+  }
+}
+
+function checkParams(req) {
+  var returnObj = {
+    "purpose": "",
+    "money": ""
+  }
+
+  try {
+    returnObj.purpose = req.body.action.params["목적"];
+    returnObj.money = req.body.action.params["금액"].split(",")[0].split(":")[1].slice(1);
+  } catch (e) {
+    returnObj.purpose = "";
+    returnObj.money = "";
+  }
+
+  return returnObj;
+}
+
 
 // JSON내 목적 쓰기
 function _writePurpose(_userID, purpose) {
@@ -205,62 +256,6 @@ function _writePurpose(_userID, purpose) {
 
   writeJSON();
   return "금액을 정확히 입력해 주십시오.";
-}
-
-// 금액 입력
-apiRouter.post('/inputMoney', function(req, res) {
-  const responseBody = {
-    version: "2.0",
-    template: _writeMoney(req.body.userRequest.user.id, req.body.userRequest.utterance)
-
-  };
-  console.log("inputMoney " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " +req.body.userRequest.utterance + " " + req._startTime);
-  res.status(200).send(responseBody);
-});
-
-// JSON내 금액 쓰기
-function _writeMoney(_userID, money) {
-  var userNum = _checkJSON(_userID);
-  var returnObj;
-
-  if(userNum == "empty"){
-    returnObj = {template: {
-      outputs: [
-        {
-          simpleText: {
-            text: "계정이 없습니다. 확인해 주십시오."
-          }
-        }
-      ],
-      quickReplies: [
-      {
-        action: "block",
-        label: "처음으로",
-        messageText: "처음으로",
-        blockId: "5ceb722905aaa7533585ab8b",
-        extra: {
-        }
-      }
-    ]
-  }};
-    return returnObj.outputs;
-  }
-  obj.table[userNum].type = "PA";
-  obj.table[userNum].pa_input.money = money;
-  var returnText = obj.table[userNum].name + " " + obj.table[userNum].pa_input.purpose + " " + obj.table[userNum].pa_input.money + "\n전송 하려면 전송코드를 입력하시오.";
-
-  writeJSON();
-
-  returnObj = {template: {
-    outputs: [
-      {
-        simpleText: {
-          text: returnText
-        }
-      }
-    ]
-  }};
-  return returnObj.template;
 }
 
 // 본인 JSON 입력값 반환
@@ -382,7 +377,7 @@ function writeJSON(){
    });
 }
 
-// 데이터 전송
+// 전송후 Google Apps Script 호출
 apiRouter.post('/sendData', function(req, res) {
   const responseBody = {
     version: "2.0",
@@ -396,14 +391,35 @@ apiRouter.post('/sendData', function(req, res) {
       ]
     }
   };
-  var sendObj = obj.table[_checkJSON(req.body.userRequest.user.id)];
 
 
-  callAppsScript(_auth, sendObj);
-  console.log("sendData " + obj.table[_checkJSON(req.body.userRequest.user.id)].name + " " +req.body.userRequest.utterance + " " + req._startTime);
+  callAppsScript(_auth, manufactureSendObj(req));
+
 
   res.status(200).send(responseBody);
 });
+
+function manufactureSendObj(req){
+  var utterance = req.body.userRequest.utterance;
+  var returnObj = {
+    pa_input: {
+      purpose: "",
+      money: ""
+    },
+    type: "PA",
+    name: ""
+  };
+
+  utterance = utterance.split("\n");
+
+  returnObj.pa_input.purpose = utterance[0].split(" : ")[1];
+  returnObj.pa_input.money = utterance[1].split(" : ")[1];
+  returnObj.name = obj.table[_checkJSON(req.body.userRequest.user.id)].name;
+  console.log(returnObj);
+
+  return returnObj;
+}
+
 
 app.listen(port, function() {
   console.log('Skill server listening on port ' + port);

@@ -1,4 +1,5 @@
-
 *.csv
-PandoraBotJSON.json
 credentials.json
+*.DS_Store
+*.json
+*.php
