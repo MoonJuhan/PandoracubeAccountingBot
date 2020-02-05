@@ -10,6 +10,9 @@ function myFunction(jsonObj) {
   // 시간 추출
   var _time = splitTime();
 
+// 기능
+
+
   // 판도라큐브 회계와 진영 식품 분리
   if(jsonObj.type == "PA"){
     var _money = wonDelete(jsonObj.money);
