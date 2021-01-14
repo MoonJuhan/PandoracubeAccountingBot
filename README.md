@@ -1,3 +1,5 @@
+![](./PAB_Logo.png)
+
 # Pandoracube Accounting Bot
 
 > 동아리 회계 업무를 도와주는 업무자동화 서비스
