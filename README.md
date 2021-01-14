@@ -1,5 +1,5 @@
 
-<img src="./PAB_Logo.png" style="width:260px">
+<img src="./PAB_Logo.png" width="260">
 
 # Pandoracube Accounting Bot
 
