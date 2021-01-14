@@ -1,4 +1,5 @@
-![](./PAB_Logo.png)
+
+<img src="./PAB_Logo.png" style="width:260px">
 
 # Pandoracube Accounting Bot
 
